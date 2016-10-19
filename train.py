@@ -3,10 +3,15 @@ import os
 import sys
 import tensorflow as tf
 
+from reader import create_inputs
+from model import SegModel
+
 
 BATCH_SIZE = 1
 NUM_STEPS = 4000
 LEARNING_RATE = 0.02
+LOGDIR_ROOT = './logdir'
+STARTED_DATESTRING = "{0:%Y-%m-%dT%H-%M-%S}".format(datetime.now())
 SEG_PARAMS = './wavenet_params.json'
 L2_REGULARIZATION_STRENGTH = 0
 
@@ -24,14 +29,29 @@ def get_arguments():
                         default=L2_REGULARIZATION_STRENGTH,
                         help='Coefficient in the L2 regularization. '
                         'Disabled by default')
+    parser.add_argument('--logdir_root', type=str, default=LOGDIR_ROOT,
+                        help='Root directory to place the logging '
+                        'output and generated model. These are stored '
+                        'under the dated subdirectory of --logdir_root. '
+                        'Cannot use with --logdir.')
     return parser.parse_args()
 
+def get_default_logdir(logdir_root):
+    print(logdir_root)
+    print(STARTED_DATESTRING)
+    logdir = os.path.join(logdir_root, 'train', STARTED_DATESTRING)
+    return logdir
 
 def main():
 	args = get_arguments()
 
     with open(args.seg_params, 'r') as f:
         seg_params = json.load(f)
+
+    logdir_root = args.logdir_root
+    logdir = get_default_logdir(logdir_root)
+
+    image, labels = create_inputs()
 
     # Create coordinator.
     coord = tf.train.Coordinator()
