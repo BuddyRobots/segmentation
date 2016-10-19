@@ -53,6 +53,16 @@ def main():
 
     image, labels = create_inputs()
 
+    image_batch, label_batch = tf.train.shuffle_batch([image, label], batch_size=1)
+
+    queue = tf.RandomShuffleQueue(
+        256,
+        ['uint8', 'uint8'],
+        shapes=[(params['lr_size'], params['lr_size'], 3),
+                (params['lr_size'] - params['edge'], params['lr_size'] - params['edge'], 3 * params['ratio']**2)])
+    enqueue = queue.enqueue([lr_image, hr_data])
+    batch_input = queue.dequeue_many(args.batch_size)
+
     # Create coordinator.
     coord = tf.train.Coordinator()
 
