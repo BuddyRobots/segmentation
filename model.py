@@ -1,47 +1,87 @@
 import tensorflow as tf
 
+def create_variable(name, shape):
+	initializer = tf.contrib.layers.xavier_initializer_conv2d()
+	variable = tf.Variable(initializer(shape=shape), name=name)
+	return variable
+
+def create_bias_variable(name, shape):
+	initializer = tf.constant_initializer(value=0.0, dtype=tf.float32)
+	return tf.Variable(initializer(shape=shape), name)
+
+
 class SegModel(object):
 	def __init__(self,
 				 input_channel,
 				 klass,
 				 batch_size,
-				 dilations):
+				 network_type,
+				 kernel_size,
+				 dilations,
+				 strides,
+				 channels):
 		self.input_channel = input_channel
 		self.klass = klass
 		self.batch_size = batch_size
-		sefl.dilations = dilations
+		self.network_type = network_type
+		if self.network_type == "atrous":
+			self.dilations = dilations
+		if self.network == "deconv":
+			self.strides = strides
+		self.kernel_size = kernel_size
+		channels.insert(0, self.input_channel)
+		channels.append(self.klass)
+		self.channels = channels
 		self.variables = self._create_variables()
 
 	def _create_variables(self):
 		var = dict()
-		for i, dilation in enumerate(self.dilations):
-			current_filter = _create_variables
 
-	def _create_dilation_layer(self, input_batch, layer_index, dilation):
-		pass
+		if network_type == "atrous":
+			var['atrous'] = dict()
+			var['atrous']['filters'] = list()
+			for i, dilation in enumerate(self.dilations):
+				var['atrous']['filters'].append(create_variable('filter',
+													  [self.kernel_size[i],
+													   self.kernel_size[i],
+													   self.channels[i],
+													   self.channels[i+1]]))
+			var['atrous']['biases'] = list()
+			for i, channel in enumerate(self.channels):
+				if i == 0:
+					continue
+				var['atrous']['biases'].append(create_bias_variable('bias', [channel]))
+		return var
+
+	def _preprocess(self, input_data):
+		label = input_data[1]
+		label = tf.reshape(label, [-1])
+		image = input_data[0]
+		image = tf.cast(tf.expand_dims(image, 0), tf.float32)
+		image = image / 255.0
 
 	def _create_network(input_data):
-		f = tf.Variable(initializer(shape=[3, 3, input_channel, klass]),
-									name=name)
-		current_layer = tf.nn.conv2d(input=input_data,
-									 filter=f,
-									 strides=[1, 1, 1, 1],
-									 padding='SAME')
-		return current_layer
-		# current_layer = input_batch
-		# for layer_index, dilation in enumerate(self.dilations):
-		# 	output, current_layer = self._create_dilation_layer(current_layer, layer_index, dilation)
+		if self.network_type == 'atrous':
+			current_layer = input_batch
+			for layer_idx, dilation in enumerate(self.dilations):
+				conv = tf.nn.atrous_conv2d(value=current_layer,
+										   filters=self.variables['atrous']['filters'][layer_idx],
+										   rate=self.dilations[layer_idx],
+										   padding='SAME')
+				with_bias = tf.nn.bias_add(conv, self.variables['atrous']['biases'][layer_idx])
+				if idx == len(self.dilations) - 1:
+					current_layer = with_bias
+				else:
+					current_layer = tf.nn.relu(with_bias)
+			return current_layer
 
 	def loss(self,
 			 input_data):
-		image = input_data[0]
-		label = input_data[1]
-		image = tf.cast(tf.expand_dims(image, 0), tf.float32)
+		image, label = self._preprocess(input_data)
 
 		output = self._create_network(image)
 
-		label = tf.reshape(label, [-1])
-		# the definition of elements in label:
+		# value for the elements in label can be:
 		#	-1: not care
 		#	i (i >= 0): the i-th class (0-based)
 		# this is because that the labels parameter for sparse_softmax_cross_entropy_with_logits ranges from [0, num_classes]

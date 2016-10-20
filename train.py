@@ -48,11 +48,25 @@ def get_default_logdir(logdir_root):
 	logdir = os.path.join(logdir_root, 'train', STARTED_DATESTRING)
 	return logdir
 
+
+def check_params(seg_params):
+	if seg_params['network_type'] == "atrous":
+		if len(seg_params['dilations']) - len(seg_params['channels']) != 1:
+			print("For atrous net, the length of 'dilations' must be greater then the length of 'channels' by 1.")
+			return False
+		if len(seg_params['kernel_size']) != len(seg_params['dilations']):
+			print("For atrous net, the length of 'dilations' must be equal to the length of 'kernel_size'.")
+			return False
+	return True
+
 def main():
 	args = get_arguments()
 
 	with open(args.seg_params, 'r') as f:
 		seg_params = json.load(f)
+
+	if check_params(seg_params) == False:
+		return
 
 	logdir_root = args.logdir_root
 	logdir = get_default_logdir(logdir_root)
@@ -67,7 +81,11 @@ def main():
 		input_channel=args.input_channel,
 		klass=args.klass,
 		batch_size=args.batch_size,
-		dilations=seg_params['dilations'])
+		network_type=seg_params['network_type'],
+		kernel_size=seg_params['kernel_size'],
+		dilations=seg_params['dilations'],
+		strides=seg_params['strides'],
+		channels=seg_params['channels'])
 
 	loss = net.loss(input_data)
 	optimizer = tf.train.AdamOptimizer(learning_rate=args.learning_rate)
