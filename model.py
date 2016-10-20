@@ -56,6 +56,12 @@ class SegModel(object):
 	def _preprocess(self, input_data):
 		label = input_data[1]
 		label = tf.reshape(label, [-1])
+		# value for the elements in label before preprocess can be:
+		#	0: not care
+		#	i (i > 0): the i-th class (1-based)
+		# this is because eac element is saved as one byte (unsigned 8-bit int) in the label file, and its range is from 0 to 255
+		label = tf.cast(label, tf.int32)
+		label = label - 1
 		image = input_data[0]
 		image = tf.cast(tf.expand_dims(image, 0), tf.float32)
 		image = image / 255.0
@@ -81,7 +87,7 @@ class SegModel(object):
 
 		output = self._create_network(image)
 
-		# value for the elements in label can be:
+		# value for the elements in label after preprocess can be:
 		#	-1: not care
 		#	i (i >= 0): the i-th class (0-based)
 		# this is because that the labels parameter for sparse_softmax_cross_entropy_with_logits ranges from [0, num_classes]
@@ -93,7 +99,6 @@ class SegModel(object):
 		effective_output = tf.boolean_mask(tensor=output,
 										   mask=label_indicator)
 
-		effective_label = tf.cast(effective_label, tf.int32)
 		loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
 			logits=effective_output,
 			labels=effective_label)
