@@ -1,11 +1,10 @@
 {
-	// can be atrous or deconv
-	"network_type": "atrous",
-	// used for atrous networks
+    "network_type": "atrous",
+    "_comment": "used for atrous networks",
     "dilations": [1, 2, 4, 8],
-    // used for deconv networks
-    "stride": [1, 2, 1, 2],
-    // used for both atrous and deconv networks
+    "_comment": "used for deconv networks",
+    "strides": [1, 2, 1, 2],
+    "_comment": "used for both atrous and deconv networks",
     "channels": [32, 64, 64],
     "kernel_size": [3, 3, 3, 3]
 }

@@ -1,2 +1,4 @@
-log_dir
-training_set
+logdir
+training_set*
+*.png
+*ckpt*

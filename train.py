@@ -1,6 +1,9 @@
 import argparse
 import os
 import sys
+from datetime import datetime
+import json
+import time
 import tensorflow as tf
 
 from reader import create_inputs
@@ -8,13 +11,13 @@ from model import SegModel
 
 
 BATCH_SIZE = 1
-NUM_STEPS = 4000
-LEARNING_RATE = 0.02
+NUM_STEPS = 2000
+LEARNING_RATE = 0.0002
 KLASS = 2
 INPUT_CHANNEL = 1
 LOGDIR_ROOT = './logdir'
 STARTED_DATESTRING = "{0:%Y-%m-%dT%H-%M-%S}".format(datetime.now())
-SEG_PARAMS = './wavenet_params.json'
+SEG_PARAMS = './seg_params.json'
 L2_REGULARIZATION_STRENGTH = 0
 
 def get_arguments():
@@ -59,6 +62,18 @@ def check_params(seg_params):
 			return False
 	return True
 
+def save(saver, sess, logdir, step):
+    model_name = 'model.ckpt'
+    checkpoint_path = os.path.join(logdir, model_name)
+    print('Storing checkpoint to {} ...'.format(logdir))
+    sys.stdout.flush()
+
+    if not os.path.exists(logdir):
+        os.makedirs(logdir)
+
+    saver.save(sess, checkpoint_path, global_step=step)
+    print(' Done.')
+
 def main():
 	args = get_arguments()
 
@@ -71,7 +86,7 @@ def main():
 	logdir_root = args.logdir_root
 	logdir = get_default_logdir(logdir_root)
 
-	image, labels = create_inputs(args.input_channel)
+	image, label = create_inputs(args.input_channel)
 
 	queue = tf.FIFOQueue(256, ['uint8', 'uint8'])
 	enqueue = queue.enqueue([image, label])
@@ -109,7 +124,6 @@ def main():
 	saver = tf.train.Saver()
 
 	try:
-		print(args.num_steps)
 		start_time = time.time()
 		for step in range(args.num_steps):
 			summary, loss_value, _ = sess.run([summaries, loss, optim])

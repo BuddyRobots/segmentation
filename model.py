@@ -26,7 +26,7 @@ class SegModel(object):
 		self.network_type = network_type
 		if self.network_type == "atrous":
 			self.dilations = dilations
-		if self.network == "deconv":
+		if self.network_type == "deconv":
 			self.strides = strides
 		self.kernel_size = kernel_size
 		channels.insert(0, self.input_channel)
@@ -37,7 +37,7 @@ class SegModel(object):
 	def _create_variables(self):
 		var = dict()
 
-		if network_type == "atrous":
+		if self.network_type == "atrous":
 			var['atrous'] = dict()
 			var['atrous']['filters'] = list()
 			for i, dilation in enumerate(self.dilations):
@@ -65,17 +65,18 @@ class SegModel(object):
 		image = input_data[0]
 		image = tf.cast(tf.expand_dims(image, 0), tf.float32)
 		image = image / 255.0
+		return image, label
 
-	def _create_network(input_data):
+	def _create_network(self, input_data):
 		if self.network_type == 'atrous':
-			current_layer = input_batch
+			current_layer = input_data
 			for layer_idx, dilation in enumerate(self.dilations):
 				conv = tf.nn.atrous_conv2d(value=current_layer,
 										   filters=self.variables['atrous']['filters'][layer_idx],
 										   rate=self.dilations[layer_idx],
 										   padding='SAME')
 				with_bias = tf.nn.bias_add(conv, self.variables['atrous']['biases'][layer_idx])
-				if idx == len(self.dilations) - 1:
+				if layer_idx == len(self.dilations) - 1:
 					current_layer = with_bias
 				else:
 					current_layer = tf.nn.relu(with_bias)
@@ -95,7 +96,7 @@ class SegModel(object):
 		label_indicator = tf.greater(label, -1)
 		effective_label = tf.boolean_mask(tensor=label,
 										  mask=label_indicator)
-		output = tf.reshape(output, [-1, klass])
+		output = tf.reshape(output, [-1, self.klass])
 		effective_output = tf.boolean_mask(tensor=output,
 										   mask=label_indicator)
 
@@ -103,3 +104,14 @@ class SegModel(object):
 			logits=effective_output,
 			labels=effective_label)
 		reduced_loss = tf.reduce_mean(loss)
+		tf.scalar_summary('loss', reduced_loss)
+		return reduced_loss
+
+	def generate(self,
+				 image):
+		image = tf.cast(tf.expand_dims(tf.expand_dims(image, 2), 0), tf.float32)
+		normalized_image = image / 255.0
+		output = self._create_network(normalized_image)
+		output_image = tf.argmax(input=output,
+								 dimension=3)
+		return output_image
