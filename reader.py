@@ -14,12 +14,9 @@ def image_label_list():
         break
     return image_name_list, label_name_list
 
-def create_inputs():
+def create_inputs(input_channel):
 
     image_name_list, label_name_list = image_label_list()
-
-    # image_names = ops.convert_to_tensor(image_list, dtype=dtypes.string)
-    # label_names = ops.convert_to_tensor(label_list, dtype=dtypes.string)
 
     seed = np.random.randint(1000)
 
@@ -28,13 +25,12 @@ def create_inputs():
 
     image_reader = tf.WholeFileReader()
     _, image_content = image_reader.read(image_name_queue)
-    image_tensor = tf.image.decode_png(image_content, channels=3)
+    image_tensor = tf.image.decode_png(image_content, channels=input_channel)
 
     label_reader = tf.WholeFileReader()
     _, label_content = label_reader.read(label_name_queue)
     label_tensor = tf.decode_raw(label_content, tf.uint8)
-    # tf.reshape(label_tensor, image_tensor.get_shape())
 
     return image_tensor, label_tensor
 
-create_inputs()
+# create_inputs()
