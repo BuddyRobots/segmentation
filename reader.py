@@ -32,5 +32,3 @@ def create_inputs(input_channel):
     label_tensor = tf.decode_raw(label_content, tf.uint8)
 
     return image_tensor, label_tensor
-
-# create_inputs()

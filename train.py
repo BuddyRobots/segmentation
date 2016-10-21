@@ -53,12 +53,22 @@ def get_default_logdir(logdir_root):
 
 
 def check_params(seg_params):
-	if seg_params['network_type'] == "atrous":
+	if seg_params['network_type'] != 'atrous' and seg_params['network_type'] != 'deconv':
+		print("Network type can only be atrous or deconv.")
+		return False
+	if seg_params['network_type'] == 'atrous':
 		if len(seg_params['dilations']) - len(seg_params['channels']) != 1:
 			print("For atrous net, the length of 'dilations' must be greater then the length of 'channels' by 1.")
 			return False
 		if len(seg_params['kernel_size']) != len(seg_params['dilations']):
 			print("For atrous net, the length of 'dilations' must be equal to the length of 'kernel_size'.")
+			return False
+	if seg_params['network_type'] == 'deconv':
+		if len(seg_params['strides']) - len(seg_params['channels']) != 1:
+			print("For deconv net, the length of 'strides' must be greater then the length of 'channels' by 1.")
+			return False
+		if len(seg_params['kernel_size']) != len(seg_params['strides']):
+			print("For deconv net, the length of 'strides' must be equal to the length of 'kernel_size'.")
 			return False
 	return True
 
