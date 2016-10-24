@@ -25,12 +25,16 @@ def get_arguments():
 						help='Number of input channel.')
 	parser.add_argument('--seg_params', type=str, default=SEG_PARAMS,
 						help='JSON file with the network parameters.')
+	parser.add_argument('--batch_generate', type=bool, default=False,
+						help='Whether to generate for multiple images.')
+	parser.add_argument('--input_path', type=str,
+						help='The name of the folder in which the images and labels are (when batch_generate is True).')
 	parser.add_argument('--image', type=str,
 						help='The limage waiting for processed.')
 	parser.add_argument('--label', type=str,
 						help='The label data, used to determine which pixels are unnecessary to calculate.')
 	parser.add_argument('--out_path', type=str,
-						help='The output path for the segmentation result image')
+						help='The output path for the segmentation result image (if batch_generate is True, this is a dir, else is a file.)')
 	return parser.parse_args()
 
 def check_params(seg_params):
@@ -52,6 +56,27 @@ def check_params(seg_params):
 			print("For deconv net, the length of 'strides' must be equal to the length of 'kernel_size'.")
 			return False
 	return True
+
+def generate_one(sess, net, image, label, out_path, input_channel, klass, input_image, output_image):
+	if input_channel == 1:
+		input_image_data = misc.imread(image, mode='L')
+		input_image_data = np.expand_dims(input_image_data, axis=2)
+	else:
+		input_image_data = misc.imread(image)
+
+
+	output_image_data = sess.run(output_image, feed_dict={input_image: input_image_data})
+	height, width, _ = input_image_data.shape
+
+	output_label = np.zeros([height, width], dtype='int32')
+
+	label_data = np.fromfile(label, dtype='byte')
+	label_data = label_data.reshape([height, width])
+	for x in range(height):
+		for y in range(width):
+			if label_data[x][y] > 0:
+				output_label[x][y] = 255 * (output_image_data[0][x][y] + 1) / klass
+	misc.imsave(out_path, output_label)
 
 def main():
 	args = get_arguments()
@@ -79,26 +104,31 @@ def main():
 	saver = tf.train.Saver()
 	saver.restore(sess, args.checkpoint)
 
-	if args.input_channel == 1:
-		input_image_data = misc.imread(args.image, mode='L')
-		input_image_data = np.expand_dims(input_image_data, axis=2)
+	if args.batch_generate:
+		for (dirpath, dirnames, filenames) in os.walk(args.input_path + '/images'):
+			for filename in filenames:
+				image = args.input_path + '/images/' + filename
+				label = args.input_path + '/labels/' + filename.replace('.png', '.dat')
+				out_path = args.out_path + '/' + filename
+				generate_one(sess=sess,
+							 net=net,
+							 image=image,
+							 label=label,
+							 out_path=out_path,
+							 input_channel=args.input_channel,
+							 klass=args.klass,
+							 input_image=input_image,
+							 output_image=output_image)
 	else:
-		input_image_data = misc.imread(args.image)
-
-	print(input_image_data.shape)
-
-	output_image_data = sess.run(output_image, feed_dict={input_image: input_image_data})
-	height, width, _ = input_image_data.shape
-
-	output_label = np.zeros([height, width], dtype='int32')
-
-	label_data = np.fromfile(args.label, dtype='byte')
-	label_data = label_data.reshape([height, width])
-	for x in range(height):
-		for y in range(width):
-			if label_data[x][y] > 0:
-				output_label[x][y] = 255 * (output_image_data[0][x][y] + 1) / args.klass
-	misc.imsave(args.out_path, output_label)
+		generate_one(sess=sess,
+					 net=net,
+					 image=args.image,
+					 label=args.label,
+					 out_path=args.out_path,
+					 input_channel=args.input_channel,
+					 klass=args.klass,
+					 input_image=input_image,
+					 output_image=output_image)
 
 if __name__ == '__main__':
 	main()

@@ -9,6 +9,8 @@ def image_label_list(training_set_dir):
     image_name_list = [ ]
     label_name_list = [ ]
     for (dirpath, dirnames, filenames) in os.walk(training_set_dir + '/labels'):
+        print "Training set has " + str(len(filenames)) + " files."
+    for (dirpath, dirnames, filenames) in os.walk(training_set_dir + '/labels'):
         label_name_list.extend(map(lambda x: training_set_dir + '/labels/' + x, filenames))
         image_name_list.extend(map(lambda x: training_set_dir + '/images/' + x.replace('.dat', '.png'), filenames))
         break
