@@ -1,4 +1,5 @@
 logdir
-training_set*
+*training_set*
 *.png
+*.dat
 *ckpt*

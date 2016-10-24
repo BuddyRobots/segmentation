@@ -5,18 +5,18 @@ import numpy as np
 import os
 import json
 
-def image_label_list():
+def image_label_list(training_set_dir):
     image_name_list = [ ]
     label_name_list = [ ]
-    for (dirpath, dirnames, filenames) in os.walk('training_set/labels'):
-        label_name_list.extend(map(lambda x: 'training_set/labels/' + x, filenames))
-        image_name_list.extend(map(lambda x: 'training_set/images/' + x.replace('.dat', '.png'), filenames))
+    for (dirpath, dirnames, filenames) in os.walk(training_set_dir + '/labels'):
+        label_name_list.extend(map(lambda x: training_set_dir + '/labels/' + x, filenames))
+        image_name_list.extend(map(lambda x: training_set_dir + '/images/' + x.replace('.dat', '.png'), filenames))
         break
     return image_name_list, label_name_list
 
-def create_inputs(input_channel):
+def create_inputs(input_channel, training_set_dir):
 
-    image_name_list, label_name_list = image_label_list()
+    image_name_list, label_name_list = image_label_list(training_set_dir)
 
     seed = np.random.randint(1000)
 

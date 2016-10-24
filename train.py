@@ -13,11 +13,12 @@ from model import SegModel
 BATCH_SIZE = 1
 NUM_STEPS = 5000
 LEARNING_RATE = 0.0005
-KLASS = 2
-INPUT_CHANNEL = 1
+KLASS = 7
+INPUT_CHANNEL = 3
 LOGDIR_ROOT = './logdir'
 STARTED_DATESTRING = "{0:%Y-%m-%dT%H-%M-%S}".format(datetime.now())
 SEG_PARAMS = './seg_params.json'
+TRAINING_SET_DIR = './training_set/'
 L2_REGULARIZATION_STRENGTH = 0
 
 def get_arguments():
@@ -34,6 +35,8 @@ def get_arguments():
 						help='Number of input channel.')
 	parser.add_argument('--seg_params', type=str, default=SEG_PARAMS,
 						help='JSON file with the network parameters.')
+	parser.add_argument('--training_set_dir', type=str, default=TRAINING_SET_DIR,
+						help='Dir for training data.')
 	parser.add_argument('--l2_regularization_strength', type=float,
 						default=L2_REGULARIZATION_STRENGTH,
 						help='Coefficient in the L2 regularization. '
@@ -96,7 +99,8 @@ def main():
 	logdir_root = args.logdir_root
 	logdir = get_default_logdir(logdir_root)
 
-	image, label = create_inputs(args.input_channel)
+	image, label = create_inputs(input_channel=args.input_channel,
+								 training_set_dir=args.training_set_dir)
 
 	queue = tf.FIFOQueue(256, ['uint8', 'uint8'])
 	enqueue = queue.enqueue([image, label])

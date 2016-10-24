@@ -1,6 +1,6 @@
 {
 	"_comment": "can be atrous or deconv.",
-	"network_type": "deconv",
+	"network_type": "atrous",
 	"_comment": "used for atrous networks",
 	"dilations": [1, 2, 4, 8, 1, 2, 4, 8],
 	"_comment": "used for deconv networks, minus value indicates a deconvolution op",

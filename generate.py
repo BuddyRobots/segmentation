@@ -3,13 +3,14 @@ import os
 import sys
 import json
 from scipy import misc
+import numpy as np
 import tensorflow as tf
 
 from model import SegModel
 
 BATCH_SIZE = 1
-KLASS = 2
-INPUT_CHANNEL = 1
+KLASS = 7
+INPUT_CHANNEL = 3
 SEG_PARAMS = './seg_params.json'
 
 def get_arguments():
@@ -26,6 +27,8 @@ def get_arguments():
 						help='JSON file with the network parameters.')
 	parser.add_argument('--image', type=str,
 						help='The limage waiting for processed.')
+	parser.add_argument('--label', type=str,
+						help='The label data, used to determine which pixels are unnecessary to calculate.')
 	parser.add_argument('--out_path', type=str,
 						help='The output path for the segmentation result image')
 	return parser.parse_args()
@@ -76,16 +79,26 @@ def main():
 	saver = tf.train.Saver()
 	saver.restore(sess, args.checkpoint)
 
-	input_image_data = misc.imread(args.image, mode='L')
+	if args.input_channel == 1:
+		input_image_data = misc.imread(args.image, mode='L')
+		input_image_data = np.expand_dims(input_image_data, axis=2)
+	else:
+		input_image_data = misc.imread(args.image)
+
+	print(input_image_data.shape)
 
 	output_image_data = sess.run(output_image, feed_dict={input_image: input_image_data})
-	width, height = input_image_data.shape
-	for x in range(width):
-		for y in range(height):
-			if input_image_data[x][y] == 255:
-				if output_image_data[0][x][y] == 0:
-					input_image_data[x][y] = 125
-	misc.imsave(args.out_path, input_image_data)
+	height, width, _ = input_image_data.shape
+
+	output_label = np.zeros([height, width], dtype='int32')
+
+	label_data = np.fromfile(args.label, dtype='byte')
+	label_data = label_data.reshape([height, width])
+	for x in range(height):
+		for y in range(width):
+			if label_data[x][y] > 0:
+				output_label[x][y] = 255 * (output_image_data[0][x][y] + 1) / args.klass
+	misc.imsave(args.out_path, output_label)
 
 if __name__ == '__main__':
 	main()

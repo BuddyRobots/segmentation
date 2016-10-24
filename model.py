@@ -77,7 +77,7 @@ class SegModel(object):
 	def _preprocess(self, input_data, generate=False):
 		if generate == True:
 			image = input_data
-			image = tf.cast(tf.expand_dims(tf.expand_dims(image, 2), 0), tf.float32)
+			image = tf.cast(tf.expand_dims(image, 0), tf.float32)
 			label = None
 		else:
 			image = input_data[0]
