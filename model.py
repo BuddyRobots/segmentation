@@ -112,7 +112,7 @@ class SegModel(object):
 			for layer_idx, dilation in enumerate(self.dilations):
 				conv = tf.nn.atrous_conv2d(value=current_layer,
 										   filters=self.variables['atrous']['filters'][layer_idx],
-										   rate=self.dilations[layer_idx],
+										   rate=dilation,
 										   padding='SAME')
 				with_bias = tf.nn.bias_add(conv, self.variables['atrous']['biases'][layer_idx])
 				if layer_idx == len(self.dilations) - 1:
@@ -146,8 +146,7 @@ class SegModel(object):
 					current_layer = tf.nn.relu(with_bias)
 			return current_layer
 
-	def loss(self,
-			 input_data):
+	def loss(self, input_data):
 		image, label = self._preprocess(input_data)
 
 		output = self._create_network(image)
@@ -178,8 +177,7 @@ class SegModel(object):
 		tf.scalar_summary('loss', reduced_loss)
 		return reduced_loss
 
-	def generate(self,
-				 image):
+	def generate(self, image):
 		image, _ = self._preprocess(input_data=image,
 									generate=True)
 		output = self._create_network(image)
