@@ -5,3 +5,4 @@ logdir
 *ckpt*
 *pyc
 *.ipynb_checkpoints
+*.zip
