@@ -30,7 +30,7 @@ def get_arguments():
 	parser.add_argument('--input_path', type=str,
 						help='The name of the folder in which the images and labels are (when batch_generate is True).')
 	parser.add_argument('--image', type=str,
-						help='The limage waiting for processed.')
+						help='The image waiting for processed.')
 	parser.add_argument('--label', type=str,
 						help='The label data, used to determine which pixels are unnecessary to calculate.')
 	parser.add_argument('--out_path', type=str,

@@ -3,3 +3,4 @@ logdir
 *.png
 *.dat
 *ckpt*
+*pyc
