@@ -4,3 +4,4 @@ logdir
 *.dat
 *ckpt*
 *pyc
+*.ipynb_checkpoints
