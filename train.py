@@ -13,12 +13,12 @@ from model import SegModel
 BATCH_SIZE = 1
 NUM_STEPS = 10000
 LEARNING_RATE = 0.0005
-KLASS = 7
-INPUT_CHANNEL = 3
+KLASS = 2
+INPUT_CHANNEL = 1
 LOGDIR_ROOT = './logdir'
 STARTED_DATESTRING = "{0:%Y-%m-%dT%H-%M-%S}".format(datetime.now())
 SEG_PARAMS = './seg_params.json'
-TRAINING_SET_DIR = './training_set/'
+TRAINING_SET_DIR = './equation_data/data2/labeled/'
 L2_REGULARIZATION_STRENGTH = 0
 
 def get_arguments():

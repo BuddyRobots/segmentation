@@ -2,10 +2,10 @@
 	"_comment": "can be atrous or deconv.",
 	"network_type": "atrous",
 	"_comment": "used for atrous networks",
-	"dilations": [1, 2, 4, 8, 16, 1, 2, 4, 8],
+	"dilations": [1, 2, 4, 8, 16, 1, 2, 4, 8, 16],
 	"_comment": "used for deconv networks, minus value indicates a deconvolution op",
 	"strides": [1, 2, 1, 2, 1, -2, 1, -2],
 	"_comment": "used for both atrous and deconv networks",
-	"channels": [64, 64, 64, 64, 64, 64, 64, 64],
-	"kernel_size": [3, 3, 3, 3, 3, 3, 3, 3, 3]
+	"channels": [64, 64, 64, 64, 64, 64, 64, 64, 64],
+	"kernel_size": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
 }

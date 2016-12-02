@@ -6,3 +6,4 @@ logdir
 *pyc
 *.ipynb_checkpoints
 *.zip
+equation_data
