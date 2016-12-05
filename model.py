@@ -82,9 +82,11 @@ class SegModel(object):
 			label = None
 		else:
 			image = input_data[0]
-			image = tf.cast(tf.expand_dims(image, 0), tf.float32)
+			# if shuffle batch is used in reader.py, there is no need to expand dimensions
+			image = tf.cast(image, tf.float32)
+			# image = tf.cast(tf.expand_dims(image, 0), tf.float32)
 			label = input_data[1]
-			label = tf.reshape(label, [-1])
+			label = tf.reshape(label, [self.batch_size, -1])
 			# value for the elements in label before preprocess can be:
 			#	0: not care
 			#	i (i > 0): the i-th class (1-based)
@@ -175,8 +177,8 @@ class SegModel(object):
 			# is padded with zero to make the image size divisable by the downsampling
 			# scale. The padded zero should be sliced before calculating loss
 			# with labels
-			output = tf.slice(output, [0, self.h_pad, self.w_pad, 0], [1, self.h, self.w, self.klass])
-		output = tf.reshape(output, [-1, self.klass])
+			output = tf.slice(output, [0, self.h_pad, self.w_pad, 0], [self.batch_size, self.h, self.w, self.klass])
+		output = tf.reshape(output, [self.batch_size, -1, self.klass])
 		effective_output = tf.boolean_mask(tensor=output,
 										   mask=label_indicator)
 

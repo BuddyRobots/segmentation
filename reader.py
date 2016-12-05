@@ -16,7 +16,7 @@ def image_label_list(training_set_dir):
         break
     return image_name_list, label_name_list
 
-def create_inputs(input_channel, training_set_dir):
+def create_inputs(input_channel, training_set_dir, batch_size):
 
     image_name_list, label_name_list = image_label_list(training_set_dir)
 
@@ -33,4 +33,10 @@ def create_inputs(input_channel, training_set_dir):
     _, label_content = label_reader.read(label_name_queue)
     label_tensor = tf.decode_raw(label_content, tf.uint8)
 
-    return image_tensor, label_tensor
+    image_batch, label_batch = tf.train.shuffle_batch(tensors=[image_tensor, label_tensor],
+                                                      batch_size=batch_size,
+                                                      shapes=[[224, 224, 3], [224 * 224]],
+                                                      capacity=50000,
+                                                      min_after_dequeue=10000)
+
+    return image_batch, label_batch

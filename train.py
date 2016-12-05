@@ -100,11 +100,12 @@ def main():
 	logdir_root = args.logdir_root
 	logdir = get_default_logdir(logdir_root)
 
-	image, label = create_inputs(input_channel=args.input_channel,
-								 training_set_dir=args.training_set_dir)
+	image_batch, label_batch = create_inputs(input_channel=args.input_channel,
+								 training_set_dir=args.training_set_dir,
+								 batch_size=args.batch_size)
 
 	queue = tf.FIFOQueue(256, ['uint8', 'uint8'])
-	enqueue = queue.enqueue([image, label])
+	enqueue = queue.enqueue([image_batch, label_batch])
 	input_data = queue.dequeue()
 
 	net = SegModel(
