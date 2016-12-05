@@ -82,11 +82,14 @@ class SegModel(object):
 			label = None
 		else:
 			image = input_data[0]
-			# if shuffle batch is used in reader.py, there is no need to expand dimensions
-			image = tf.cast(image, tf.float32)
-			# image = tf.cast(tf.expand_dims(image, 0), tf.float32)
 			label = input_data[1]
-			label = tf.reshape(label, [self.batch_size, -1])
+			if self.batch_size > 1:
+				# if shuffle batch is used in reader.py, there is no need to expand dimensions
+				image = tf.cast(image, tf.float32)
+				label = tf.reshape(label, [self.batch_size, -1])
+			else:
+				image = tf.cast(tf.expand_dims(image, 0), tf.float32)
+				label = tf.reshape(label, [-1])
 			# value for the elements in label before preprocess can be:
 			#	0: not care
 			#	i (i > 0): the i-th class (1-based)
@@ -178,7 +181,7 @@ class SegModel(object):
 			# scale. The padded zero should be sliced before calculating loss
 			# with labels
 			output = tf.slice(output, [0, self.h_pad, self.w_pad, 0], [self.batch_size, self.h, self.w, self.klass])
-		output = tf.reshape(output, [self.batch_size, -1, self.klass])
+		output = tf.reshape(output, [-1, self.klass])
 		effective_output = tf.boolean_mask(tensor=output,
 										   mask=label_indicator)
 
@@ -200,3 +203,13 @@ class SegModel(object):
 		print("AAAAAAAAAAAAAAAAA")
 		print(output_image.name)
 		return output_image
+
+	def print_variables(self, sess):
+		if self.network_type == "atrous":
+			for layer_idx, dilation in enumerate(self.dilations):
+				flt = sess.run(self.variables['atrous']['filters'][layer_idx])
+				bias = sess.run(self.variables['atrous']['biases'][layer_idx])
+				print("Filter of layer " + str(layer_idx) + " " + str(flt.shape) + ":")
+				print(flt)
+				print("Bias of layer " + str(layer_idx) + " " + str(bias.shape) + ":")
+				print(bias)
