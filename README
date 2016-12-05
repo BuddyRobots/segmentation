@@ -1,1 +1,1 @@
-python generate.py ./remy_model --input_path=remy_data_test_set --out_path=outputs_1 --batch_generate=True
+python generate.py ./remy_model.ckpt --input_path=remy_data_test_set --out_path=outputs_1 --batch_generate=True

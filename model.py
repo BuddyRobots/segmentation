@@ -2,6 +2,7 @@ import tensorflow as tf
 
 def create_variable(name, shape):
 	initializer = tf.contrib.layers.xavier_initializer_conv2d()
+	# initializer = tf.constant_initializer(value=0.0, dtype=tf.float32)
 	variable = tf.Variable(initializer(shape=shape), name=name)
 	return variable
 
@@ -87,7 +88,7 @@ class SegModel(object):
 			# value for the elements in label before preprocess can be:
 			#	0: not care
 			#	i (i > 0): the i-th class (1-based)
-			# this is because eac element is saved as one byte (unsigned 8-bit int) in the label file, and its range is from 0 to 255
+			# this is because each element is saved as one byte (unsigned 8-bit int) in the label file, and its range is from 0 to 255
 			label = tf.cast(label, tf.int32)
 			label = label - 1
 		# tf.nn.conv2d(padding='SAME') always pads 0 to the input tensor,
@@ -119,6 +120,7 @@ class SegModel(object):
 					current_layer = with_bias
 				else:
 					current_layer = tf.nn.relu(with_bias)
+			retval = tf.identity(current_layer, name="NETWORK_OUTPUT")
 			return current_layer
 
 		if self.network_type == 'deconv':
@@ -149,6 +151,8 @@ class SegModel(object):
 	def loss(self, input_data):
 		image, label = self._preprocess(input_data)
 
+		image = tf.identity(image, name="NETWORK_INPUT")
+
 		output = self._create_network(image)
 
 		# value for the elements in label after preprocess:
@@ -178,9 +182,13 @@ class SegModel(object):
 		return reduced_loss
 
 	def generate(self, image):
+		print("AAAAAAAAAAAAAAAAA")
+		print(image.name)
 		image, _ = self._preprocess(input_data=image,
 									generate=True)
 		output = self._create_network(image)
 		output_image = tf.argmax(input=output,
 								 dimension=3)
+		print("AAAAAAAAAAAAAAAAA")
+		print(output_image.name)
 		return output_image

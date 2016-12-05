@@ -5,20 +5,21 @@ from datetime import datetime
 import json
 import time
 import tensorflow as tf
+from tensorflow.python.framework.graph_util import convert_variables_to_constants
 
 from reader import create_inputs
 from model import SegModel
 
 
 BATCH_SIZE = 1
-NUM_STEPS = 10000
+NUM_STEPS = 100
 LEARNING_RATE = 0.0005
-KLASS = 7
+KLASS = 6
 INPUT_CHANNEL = 3
 LOGDIR_ROOT = './logdir'
 STARTED_DATESTRING = "{0:%Y-%m-%dT%H-%M-%S}".format(datetime.now())
 SEG_PARAMS = './seg_params.json'
-TRAINING_SET_DIR = './data_training_set/'
+TRAINING_SET_DIR = './owl_data_training_set/'
 L2_REGULARIZATION_STRENGTH = 0
 
 def get_arguments():
@@ -76,16 +77,16 @@ def check_params(seg_params):
 	return True
 
 def save(saver, sess, logdir, step):
-    model_name = 'model.ckpt'
-    checkpoint_path = os.path.join(logdir, model_name)
-    print('Storing checkpoint to {} ...'.format(logdir))
-    sys.stdout.flush()
+	model_name = 'model.ckpt'
+	checkpoint_path = os.path.join(logdir, model_name)
+	print('Storing checkpoint to {} ...'.format(logdir))
+	sys.stdout.flush()
 
-    if not os.path.exists(logdir):
-        os.makedirs(logdir)
+	if not os.path.exists(logdir):
+		os.makedirs(logdir)
 
-    saver.save(sess, checkpoint_path, global_step=step)
-    print(' Done.')
+	saver.save(sess, checkpoint_path, global_step=step)
+	print(' Done.')
 
 def main():
 	args = get_arguments()
@@ -158,6 +159,10 @@ def main():
 			# save(saver, sess, logdir, step)
 		coord.request_stop()
 		coord.join(threads)
+
+	with sess.as_default():
+		minimal_graph = convert_variables_to_constants(sess, sess.graph_def, ["NETWORK_OUTPUT"])
+		tf.train.write_graph(minimal_graph, '.', 'model.pb', as_text=False)
 
 if __name__ == '__main__':
 	main()

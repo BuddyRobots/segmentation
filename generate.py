@@ -9,7 +9,7 @@ import tensorflow as tf
 from model import SegModel
 
 BATCH_SIZE = 1
-KLASS = 7
+KLASS = 6
 INPUT_CHANNEL = 3
 SEG_PARAMS = './seg_params.json'
 
@@ -70,12 +70,12 @@ def generate_one(sess, net, image, label, out_path, input_channel, klass, input_
 
 	output_label = np.zeros([height, width], dtype='int32')
 
-	label_data = np.fromfile(label, dtype='byte')
-	label_data = label_data.reshape([height, width])
+	# label_data = np.fromfile(label, dtype='byte')
+	# label_data = label_data.reshape([height, width])
 	for x in range(height):
 		for y in range(width):
-			if label_data[x][y] > 0:
-				output_label[x][y] = 255 * (output_image_data[0][x][y] + 1) / klass
+			# if label_data[x][y] > 0:
+			output_label[x][y] = 255 * (output_image_data[0][x][y] + 1) / klass
 	misc.imsave(out_path, output_label)
 
 def main():
@@ -103,6 +103,13 @@ def main():
 	sess = tf.Session()
 	saver = tf.train.Saver()
 	saver.restore(sess, args.checkpoint)
+
+	# with sess.as_default():
+	# 	# for v in tf.trainable_variables():
+	# 	# 	vc = tf.constant(v.eval())
+	# 	# 	tf.assign(v, vc)
+	# 	tf.train.write_graph(sess.graph_def, "./", 'remy_model_2.pb', as_text=False)
+	# return
 
 	if args.batch_generate:
 		for (dirpath, dirnames, filenames) in os.walk(args.input_path + '/images'):
