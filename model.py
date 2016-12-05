@@ -111,10 +111,16 @@ class SegModel(object):
 		if self.network_type == 'atrous':
 			current_layer = input_data
 			for layer_idx, dilation in enumerate(self.dilations):
-				conv = tf.nn.atrous_conv2d(value=current_layer,
-										   filters=self.variables['atrous']['filters'][layer_idx],
-										   rate=dilation,
-										   padding='SAME')
+				if dilation == 1:
+					conv = tf.nn.conv2d(input=current_layer,
+										filter=self.variables['atrous']['filters'][layer_idx],
+										strides=[1,1,1,1],
+										padding='SAME')
+				else:
+					conv = tf.nn.atrous_conv2d(value=current_layer,
+											   filters=self.variables['atrous']['filters'][layer_idx],
+											   rate=dilation,
+											   padding='SAME')
 				with_bias = tf.nn.bias_add(conv, self.variables['atrous']['biases'][layer_idx])
 				if layer_idx == len(self.dilations) - 1:
 					current_layer = with_bias
