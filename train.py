@@ -11,14 +11,14 @@ from reader import create_inputs
 from model import SegModel
 
 
-BATCH_SIZE = 1
+BATCH_SIZE = 4
 NUM_STEPS = 10000
 LEARNING_RATE = 0.0005
 KLASS = 6
 INPUT_CHANNEL = 3
 LOGDIR_ROOT = './logdir'
 STARTED_DATESTRING = "{0:%Y-%m-%dT%H-%M-%S}".format(datetime.now())
-SEG_PARAMS = './owl_seg_params.json'
+SEG_PARAMS = './seg_params.json'
 TRAINING_SET_DIR = './owl_data_training_set/'
 L2_REGULARIZATION_STRENGTH = 0
 
@@ -116,7 +116,9 @@ def main():
 		kernel_size=seg_params['kernel_size'],
 		dilations=seg_params['dilations'],
 		strides=seg_params['strides'],
-		channels=seg_params['channels'])
+		channels=seg_params['channels'],
+		with_bn=seg_params['with_bn'],
+		phase_train=True)
 
 	loss = net.loss(input_data)
 	optimizer = tf.train.AdamOptimizer(learning_rate=args.learning_rate)
@@ -131,6 +133,8 @@ def main():
 	sess = tf.Session()
 	init = tf.initialize_all_variables()
 	sess.run(init)
+
+	# net.print_variables(sess)
 
 	coord = tf.train.Coordinator()
 	qr = tf.train.QueueRunner(queue, [enqueue])
