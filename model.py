@@ -117,13 +117,11 @@ class SegModel(object):
 		else:
 			image = input_data[0]
 			label = input_data[1]
-			if self.batch_size > 1:
-				# if shuffle batch is used in reader.py, there is no need to expand dimensions
-				image = tf.cast(image, tf.float32)
-				label = tf.reshape(label, [self.batch_size, -1])
-			else:
-				image = tf.cast(tf.expand_dims(image, 0), tf.float32)
-				label = tf.reshape(label, [-1])
+			label = tf.reshape(label, [-1])
+			# if shuffle batch is used in reader.py, there is no need to expand dimensions
+			if self.batch_size == 1:
+				image = tf.expand_dims(image, 0)
+			image = tf.cast(image, tf.float32)
 			# value for the elements in label before preprocess can be:
 			#	0: not care
 			#	i (i > 0): the i-th class (1-based)
