@@ -11,7 +11,7 @@ from reader import create_inputs
 from model import SegModel
 
 
-BATCH_SIZE = 1
+BATCH_SIZE = 4
 NUM_STEPS = 10000
 LEARNING_RATE = 0.0005
 KLASS = 6
@@ -116,7 +116,9 @@ def main():
 		kernel_size=seg_params['kernel_size'],
 		dilations=seg_params['dilations'],
 		strides=seg_params['strides'],
-		channels=seg_params['channels'])
+		channels=seg_params['channels'],
+		with_bn=seg_params['with_bn'],
+		phase_train=True)
 
 	loss = net.loss(input_data)
 	optimizer = tf.train.AdamOptimizer(learning_rate=args.learning_rate)

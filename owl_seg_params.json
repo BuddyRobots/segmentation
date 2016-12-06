@@ -7,5 +7,6 @@
 	"strides": [1, 2, 1, 2, 1, -2, 1, -2],
 	"_comment": "used for both atrous and deconv networks",
 	"channels": [64, 64, 64, 64, 64, 64, 64, 64],
-	"kernel_size": [9, 9, 9, 9, 9, 9, 9, 9, 9]
+	"kernel_size": [9, 9, 9, 9, 9, 9, 9, 9, 9],
+	"with_bn": true
 }

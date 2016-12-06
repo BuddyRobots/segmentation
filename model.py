@@ -10,6 +10,36 @@ def create_bias_variable(name, shape):
 	initializer = tf.constant_initializer(value=0.0, dtype=tf.float32)
 	return tf.Variable(initializer(shape=shape), name)
 
+def batch_norm(x, n_out, phase_train):
+	"""
+	Batch normalization on convolutional maps.
+	Ref.: http://stackoverflow.com/questions/33949786/how-could-i-use-batch-normalization-in-tensorflow
+	Args:
+		x:           Tensor, 4D BHWD input maps
+		n_out:       integer, depth of input maps
+		phase_train: boolean tf.Varialbe, true indicates training phase
+		scope:       string, variable scope
+	Return:
+		normed:      batch-normalized maps
+	"""
+	with tf.variable_scope('bn'):
+		beta = tf.Variable(tf.constant(0.0, shape=[n_out]),
+									 name='beta', trainable=True)
+		gamma = tf.Variable(tf.constant(1.0, shape=[n_out]),
+									  name='gamma', trainable=True)
+		batch_mean, batch_var = tf.nn.moments(x, [0,1,2], name='moments')
+		ema = tf.train.ExponentialMovingAverage(decay=0.9)
+
+		def mean_var_with_update():
+			ema_apply_op = ema.apply([batch_mean, batch_var])
+			with tf.control_dependencies([ema_apply_op]):
+				return tf.identity(batch_mean), tf.identity(batch_var)
+
+		mean, var = tf.cond(phase_train,
+							mean_var_with_update,
+							lambda: (ema.average(batch_mean), ema.average(batch_var)))
+		normed = tf.nn.batch_normalization(x, mean, var, beta, gamma, 1e-3)
+	return normed
 
 class SegModel(object):
 	def __init__(self,
@@ -20,7 +50,9 @@ class SegModel(object):
 				 kernel_size,
 				 dilations,
 				 strides,
-				 channels):
+				 channels,
+				 with_bn,
+				 phase_train):
 		self.input_channel = input_channel
 		self.klass = klass
 		self.batch_size = batch_size
@@ -33,6 +65,8 @@ class SegModel(object):
 		channels.insert(0, self.input_channel)
 		channels.append(self.klass)
 		self.channels = channels
+		self.with_bn = with_bn
+		self.phase_train = tf.Variable(phase_train)
 		self.variables = self._create_variables()
 
 	def _create_variables(self):
@@ -126,11 +160,17 @@ class SegModel(object):
 											   filters=self.variables['atrous']['filters'][layer_idx],
 											   rate=dilation,
 											   padding='SAME')
-				with_bias = tf.nn.bias_add(conv, self.variables['atrous']['biases'][layer_idx])
-				if layer_idx == len(self.dilations) - 1:
-					current_layer = with_bias
+				# the bias is unnecessary when batch normalization is adopted
+				if self.with_bn:
+					# the first element in the channels array is the input channel size,
+					conv = batch_norm(conv, self.channels[layer_idx + 1], self.phase_train)
 				else:
-					current_layer = tf.nn.relu(with_bias)
+					conv = tf.nn.bias_add(conv, self.variables['atrous']['biases'][layer_idx])
+				# the output layer has no nonlinearity
+				if layer_idx == len(self.dilations) - 1:
+					current_layer = conv
+				else:
+					current_layer = tf.nn.relu(conv)
 			retval = tf.identity(current_layer, name="NETWORK_OUTPUT")
 			return current_layer
 

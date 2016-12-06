@@ -104,7 +104,9 @@ def main():
 		kernel_size=seg_params['kernel_size'],
 		dilations=seg_params['dilations'],
 		strides=seg_params['strides'],
-		channels=seg_params['channels'])
+		channels=seg_params['channels'],
+		with_bn=seg_params['with_bn'],
+		phase_train=False)
 
 	input_image = tf.placeholder(tf.uint8)
 	output_image = net.generate(input_image)
