@@ -12,7 +12,7 @@ from model import SegModel
 BATCH_SIZE = 1
 KLASS = 6
 INPUT_CHANNEL = 3
-SEG_PARAMS = './owl_seg_params.json'
+SEG_PARAMS = './seg_params.json'
 
 def get_arguments():
 	parser = argparse.ArgumentParser(description='Generation script')

@@ -66,7 +66,10 @@ class SegModel(object):
 		channels.append(self.klass)
 		self.channels = channels
 		self.with_bn = with_bn
-		self.phase_train = tf.Variable(phase_train)
+		if self.with_bn == True:
+			self.phase_train = tf.Variable(phase_train)
+		else:
+			self.phase_train = phase_train
 		self.variables = self._create_variables()
 
 	def _create_variables(self):
