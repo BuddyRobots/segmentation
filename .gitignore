@@ -8,3 +8,4 @@ logdir
 *.zip
 *.pb
 equation_data
+.idea
