@@ -8,5 +8,5 @@
 	"_comment": "used for both atrous and deconv networks",
 	"channels": [64, 64, 64, 64, 64, 64, 64, 64, 64],
 	"kernel_size": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-	"with_bn": true
+	"with_bn": false
 }
