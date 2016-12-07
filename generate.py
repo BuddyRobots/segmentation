@@ -5,13 +5,14 @@ import json
 from scipy import misc
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.framework.graph_util import convert_variables_to_constants
 
 from model import SegModel
 
 BATCH_SIZE = 1
 KLASS = 6
 INPUT_CHANNEL = 3
-SEG_PARAMS = './seg_params.json'
+SEG_PARAMS = './owl_seg_params.json'
 
 
 def get_arguments():
