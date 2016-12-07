@@ -1,5 +1,5 @@
 {
-	"_comment": "can be atrous or deconv.",
+	"_comment": "can be atrous or conv2d or deconv.",
 	"network_type": "atrous",
 	"_comment": "used for atrous networks",
 	"dilations": [1, 2, 4, 8, 16, 1, 2, 4, 8, 16],
@@ -7,5 +7,9 @@
 	"strides": [1, 2, 1, 2, 1, -2, 1, -2],
 	"_comment": "used for both atrous and deconv networks",
 	"channels": [64, 64, 64, 64, 64, 64, 64, 64, 64],
-	"kernel_size": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+	"kernel_size": [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+	"_comment": "used for conv2d network",
+	"conv2d_dilations": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+	"_comment": "used for conv2d network (3 + 2*(dilations - 1))",
+	"conv2d_kernel_size": [3, 5, 9, 17, 33, 3, 5, 9, 17, 33]
 }
