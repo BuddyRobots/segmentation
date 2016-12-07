@@ -35,10 +35,6 @@ class Conv2DModel(object):
         if self.network_type == "conv2d":
             var['conv2d'] = dict()
             var['conv2d']['filters'] = list()
-
-            print(self.filter_data_list[1].shape)
-
-
             for i, dilation in enumerate(self.dilations):
                 var['conv2d']['filters'].append(create_variable('conv2d_filter_' + str(i),
                                                                 self.filter_data_list[i]))
@@ -123,6 +119,19 @@ class Conv2DModel(object):
                     current_layer = tf.nn.relu(with_bias)
             retval = tf.identity(current_layer, name="NETWORK_OUTPUT")
             return current_layer
+
+
+    def generate(self, image):
+        print("AAAAAAAAAAAAAAAAA")
+        print(image.name)
+        image, _ = self._preprocess(input_data=image,
+                                    generate=True)
+        output = self._create_network(image)
+        output_image = tf.argmax(input=output,
+                                 dimension=3)
+        print("AAAAAAAAAAAAAAAAA")
+        print(output_image.name)
+        return output_image
 
 
 def create_variable(name, data):

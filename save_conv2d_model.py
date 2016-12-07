@@ -9,8 +9,39 @@ from model import SegModel
 from Conv2DModel import Conv2DModel
 from train import get_arguments
 from train import check_params
+from scipy import misc
 from tensorflow.python.framework.graph_util import convert_variables_to_constants
 
+
+def generate_one(sess, net, image, label, out_path, input_channel, klass, input_image, output_image):
+	if input_channel == 1:
+		input_image_data = misc.imread(image, mode='L')
+		input_image_data = np.expand_dims(input_image_data, axis=2)
+	else:
+		input_image_data = misc.imread(image, mode='RGB')
+
+	output_image_data = sess.run(output_image, feed_dict={input_image: input_image_data})
+	height, width, _ = input_image_data.shape
+
+	output_label = np.zeros([height, width], dtype='int32')
+
+	# label_data = np.fromfile(label, dtype='byte')
+	# label_data = label_data.reshape([height, width])
+	for x in range(height):
+		for y in range(width):
+			# if label_data[x][y] > 0:
+			output_label[x][y] = 255 * (output_image_data[0][x][y] + 1) / klass
+			# if input_image_data[x][y][0] == 0:
+			# 	output_label[x][y] = 0
+			# else:
+			# 	output_label[x][y] = 255 * (output_image_data[0][x][y] + 1) / klass
+			# output_label[x][y] = 255 * (output_image_data[0][x][y] + 1) / klass
+			# if output_image_data[0][x][y] == 0:
+			# 	input_image_data[x][y][0] = input_image_data[x][y][0] / 2 + 255 / 2
+			# 	input_image_data[x][y][1] = input_image_data[x][y][1] / 2
+			# 	input_image_data[x][y][2] = input_image_data[x][y][2] / 2
+	misc.imsave(out_path, output_label)
+	# misc.imsave(out_path, input_image_data)
 
 def main():
     load_model_dir = "/Users/ZhangPengfei/Work/git/segmentation/logdir/owl.ckpt"
@@ -100,6 +131,32 @@ def main():
         with sess.as_default():
             minimal_graph = convert_variables_to_constants(sess, sess.graph_def, ["NETWORK_OUTPUT"])
             tf.train.write_graph(minimal_graph, '.', 'model.pb', as_text=False)
+
+        sess.close()
+
+        # ----------------------------------------------
+        # ----------------- generate -------------------
+        # ----------------------------------------------
+
+        input_image = tf.placeholder(tf.uint8)
+        output_image = new_net.generate(input_image)
+        sess = tf.Session()
+
+        for (dirpath, dirnames, filenames) in os.walk("owl_data_training_set" + '/images'):
+            for filename in filenames:
+                image = "owl_data_training_set" + '/images/' + filename
+                # label = args.input_path + '/labels/' + filename.replace('.png', '.dat')
+                out_path = "owl_output" + '/' + filename
+                generate_one(sess=sess,
+                             net=new_net,
+                             image=image,
+                             # label=label,
+                             label="",
+                             out_path=out_path,
+                             input_channel=3,
+                             klass=6,
+                             input_image=input_image,
+                             output_image=output_image)
 
 
 def get_atrous_filter_narrays(net, sess, dilations):
