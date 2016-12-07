@@ -5,13 +5,14 @@ import json
 from scipy import misc
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.framework.graph_util import convert_variables_to_constants
 
 from model import SegModel
 
 BATCH_SIZE = 1
 KLASS = 6
 INPUT_CHANNEL = 3
-SEG_PARAMS = './seg_params.json'
+SEG_PARAMS = './owl_seg_params.json'
 
 def get_arguments():
 	parser = argparse.ArgumentParser(description='Generation script')
@@ -90,7 +91,7 @@ def generate_one(sess, net, image, label, out_path, input_channel, klass, input_
 def main():
 	args = get_arguments()
 
-	with open("./seg_params.json", 'r') as f:
+	with open(args.seg_params, 'r') as f:
 		seg_params = json.load(f)
 
 	if check_params(seg_params) == False:
@@ -115,12 +116,9 @@ def main():
 	saver = tf.train.Saver()
 	saver.restore(sess, args.checkpoint)
 
-	# with sess.as_default():
-	# 	# for v in tf.trainable_variables():
-	# 	# 	vc = tf.constant(v.eval())
-	# 	# 	tf.assign(v, vc)
-	# 	tf.train.write_graph(sess.graph_def, "./", 'remy_model_2.pb', as_text=False)
-	# return
+	with sess.as_default():
+		minimal_graph = convert_variables_to_constants(sess, sess.graph_def, ["NETWORK_OUTPUT"])
+		tf.train.write_graph(minimal_graph, '.', 'model.pb', as_text=False)
 
 	if args.batch_generate:
 		for (dirpath, dirnames, filenames) in os.walk(args.input_path + '/images'):
