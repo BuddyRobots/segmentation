@@ -13,7 +13,7 @@ from model import SegModel
 
 BATCH_SIZE = 4
 NUM_STEPS = 10000
-LEARNING_RATE = 0.0005
+LEARNING_RATE = 0.005
 KLASS = 6
 INPUT_CHANNEL = 3
 LOGDIR_ROOT = './logdir'
@@ -57,23 +57,12 @@ def get_default_logdir(logdir_root):
 
 
 def check_params(seg_params):
-	if seg_params['network_type'] != 'atrous' and seg_params['network_type'] != 'deconv':
-		print("Network type can only be atrous or deconv.")
+	if len(seg_params['strides']) - len(seg_params['channels']) != 1:
+		print("The length of 'strides' must be greater then the length of 'channels' by 1.")
 		return False
-	if seg_params['network_type'] == 'atrous':
-		if len(seg_params['dilations']) - len(seg_params['channels']) != 1:
-			print("For atrous net, the length of 'dilations' must be greater then the length of 'channels' by 1.")
-			return False
-		if len(seg_params['kernel_size']) != len(seg_params['dilations']):
-			print("For atrous net, the length of 'dilations' must be equal to the length of 'kernel_size'.")
-			return False
-	if seg_params['network_type'] == 'deconv':
-		if len(seg_params['strides']) - len(seg_params['channels']) != 1:
-			print("For deconv net, the length of 'strides' must be greater then the length of 'channels' by 1.")
-			return False
-		if len(seg_params['kernel_size']) != len(seg_params['strides']):
-			print("For deconv net, the length of 'strides' must be equal to the length of 'kernel_size'.")
-			return False
+	if len(seg_params['kernel_size']) != len(seg_params['strides']):
+		print("The length of 'strides' must be equal to the length of 'kernel_size'.")
+		return False
 	return True
 
 def save(saver, sess, logdir, step):
@@ -112,9 +101,7 @@ def main():
 		input_channel=args.input_channel,
 		klass=args.klass,
 		batch_size=args.batch_size,
-		network_type=seg_params['network_type'],
 		kernel_size=seg_params['kernel_size'],
-		dilations=seg_params['dilations'],
 		strides=seg_params['strides'],
 		channels=seg_params['channels'],
 		with_bn=seg_params['with_bn'],
@@ -133,8 +120,6 @@ def main():
 	sess = tf.Session()
 	init = tf.initialize_all_variables()
 	sess.run(init)
-
-	# net.print_variables(sess)
 
 	coord = tf.train.Coordinator()
 	qr = tf.train.QueueRunner(queue, [enqueue])
