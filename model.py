@@ -111,11 +111,10 @@ class SegModel(object):
 		current_layer = input_data
 		for layer_idx, stride in enumerate(self.strides):
 			if stride < 0:
-				stride = 1
-				# stride = -stride
-				# current_layer_size = tf.shape(current_layer)
-				# tf.image.resize_nearest_neighbor(images=current_layer,
-				# 								 size=[current_layer_size[1] * stride, current_layer_size[2] * stride])
+				stride = -stride
+				current_layer_size = tf.shape(current_layer)
+				tf.image.resize_nearest_neighbor(images=current_layer,
+												 size=[current_layer_size[1] * stride, current_layer_size[2] * stride])
 			conv = tf.nn.conv2d(input=current_layer,
 								filter=self.variables['filters'][layer_idx],
 								strides=[1, stride, stride, 1],
