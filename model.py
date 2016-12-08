@@ -47,14 +47,14 @@ class SegModel(object):
 				 klass,
 				 batch_size,
 				 kernel_size,
-				 strides,
+				 dilations,
 				 channels,
 				 with_bn,
 				 phase_train):
 		self.input_channel = input_channel
 		self.klass = klass
 		self.batch_size = batch_size
-		self.strides = strides
+		self.dilations = dilations
 		self.kernel_size = kernel_size
 		channels.insert(0, self.input_channel)
 		channels.append(self.klass)
@@ -70,7 +70,7 @@ class SegModel(object):
 		var = dict()
 
 		var['filters'] = list()
-		for i, stride in enumerate(self.strides):
+		for i, dilation in enumerate(self.dilations):
 			var['filters'].append(create_variable('filter',
 												  [self.kernel_size[i],
 												  self.kernel_size[i],
@@ -109,16 +109,29 @@ class SegModel(object):
 
 	def _create_network(self, input_data):
 		current_layer = input_data
-		for layer_idx, stride in enumerate(self.strides):
-			if stride < 0:
-				stride = -stride
-				current_layer_size = tf.shape(current_layer)
-				tf.image.resize_nearest_neighbor(images=current_layer,
-												 size=[current_layer_size[1] * stride, current_layer_size[2] * stride])
+		for layer_idx, dilation in enumerate(self.dilations):
+			if dilation > 1:
+				current_shape = tf.shape(current_layer)
+				current_layer = tf.transpose(current_layer, perm=[1, 2, 3, 0])
+				current_layer = tf.reshape(tensor=current_layer,
+										   shape=[current_shape[1] / dilation,
+								  				  current_shape[2] / dilation,
+								  				  current_shape[3],
+								  				  current_shape[0] * dilation * dilation])
+				current_layer = tf.transpose(current_layer, perm=[3, 0, 1, 2])
 			conv = tf.nn.conv2d(input=current_layer,
 								filter=self.variables['filters'][layer_idx],
-								strides=[1, stride, stride, 1],
+								strides=[1, 1, 1, 1],
 								padding='SAME')
+			if dilation > 1:
+				current_shape = tf.shape(conv)
+				conv = tf.transpose(conv, perm=[1, 2, 3, 0])
+				conv = tf.reshape(tensor=conv,
+								  shape=[current_shape[1] * dilation,
+								  		 current_shape[2] * dilation,
+								  		 current_shape[3],
+								  		 current_shape[0] / dilation / dilation])
+				conv = tf.transpose(conv, perm=[3, 0, 1, 2])
 
 			# the bias is unnecessary when batch normalization is adopted
 			if self.with_bn:
@@ -127,7 +140,7 @@ class SegModel(object):
 			else:
 				conv = tf.nn.bias_add(conv, self.variables['biases'][layer_idx])
 			# the output layer has no nonlinearity
-			if layer_idx == len(self.strides) - 1:
+			if layer_idx == len(self.dilations) - 1:
 				current_layer = conv
 			else:
 				current_layer = tf.nn.relu(conv)

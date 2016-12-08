@@ -57,11 +57,11 @@ def get_default_logdir(logdir_root):
 
 
 def check_params(seg_params):
-	if len(seg_params['strides']) - len(seg_params['channels']) != 1:
-		print("The length of 'strides' must be greater then the length of 'channels' by 1.")
+	if len(seg_params['dilations']) - len(seg_params['channels']) != 1:
+		print("The length of 'dilations' must be greater then the length of 'channels' by 1.")
 		return False
-	if len(seg_params['kernel_size']) != len(seg_params['strides']):
-		print("The length of 'strides' must be equal to the length of 'kernel_size'.")
+	if len(seg_params['kernel_size']) != len(seg_params['dilations']):
+		print("The length of 'dilations' must be equal to the length of 'kernel_size'.")
 		return False
 	return True
 
@@ -102,7 +102,7 @@ def main():
 		klass=args.klass,
 		batch_size=args.batch_size,
 		kernel_size=seg_params['kernel_size'],
-		strides=seg_params['strides'],
+		dilations=seg_params['dilations'],
 		channels=seg_params['channels'],
 		with_bn=seg_params['with_bn'],
 		phase_train=True)
