@@ -114,10 +114,10 @@ class SegModel(object):
 				current_shape = tf.shape(current_layer)
 				current_layer = tf.transpose(current_layer, perm=[1, 2, 3, 0])
 				current_layer = tf.reshape(tensor=current_layer,
-										   shape=[current_shape[1] / dilation,
-								  				  current_shape[2] / dilation,
+										   shape=[224 / dilation,
+								  				  224 / dilation,
 								  				  current_shape[3],
-								  				  current_shape[0] * dilation * dilation])
+								  				  self.batch_size * dilation * dilation])
 				current_layer = tf.transpose(current_layer, perm=[3, 0, 1, 2])
 			conv = tf.nn.conv2d(input=current_layer,
 								filter=self.variables['filters'][layer_idx],
@@ -127,10 +127,10 @@ class SegModel(object):
 				current_shape = tf.shape(conv)
 				conv = tf.transpose(conv, perm=[1, 2, 3, 0])
 				conv = tf.reshape(tensor=conv,
-								  shape=[current_shape[1] * dilation,
-								  		 current_shape[2] * dilation,
+								  shape=[224,
+								  		 224,
 								  		 current_shape[3],
-								  		 current_shape[0] / dilation / dilation])
+								  		 self.batch_size])
 				conv = tf.transpose(conv, perm=[3, 0, 1, 2])
 
 			# the bias is unnecessary when batch normalization is adopted

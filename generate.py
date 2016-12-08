@@ -39,23 +39,12 @@ def get_arguments():
 	return parser.parse_args()
 
 def check_params(seg_params):
-	if seg_params['network_type'] != 'atrous' and seg_params['network_type'] != 'deconv':
-		print("Network type can only be atrous or deconv.")
+	if len(seg_params['dilations']) - len(seg_params['channels']) != 1:
+		print("The length of 'dilations' must be greater then the length of 'channels' by 1.")
 		return False
-	if seg_params['network_type'] == "atrous":
-		if len(seg_params['dilations']) - len(seg_params['channels']) != 1:
-			print("For atrous net, the length of 'dilations' must be greater then the length of 'channels' by 1.")
-			return False
-		if len(seg_params['kernel_size']) != len(seg_params['dilations']):
-			print("For atrous net, the length of 'dilations' must be equal to the length of 'kernel_size'.")
-			return False
-	if seg_params['network_type'] == 'deconv':
-		if len(seg_params['strides']) - len(seg_params['channels']) != 1:
-			print("For deconv net, the length of 'strides' must be greater then the length of 'channels' by 1.")
-			return False
-		if len(seg_params['kernel_size']) != len(seg_params['strides']):
-			print("For deconv net, the length of 'strides' must be equal to the length of 'kernel_size'.")
-			return False
+	if len(seg_params['kernel_size']) != len(seg_params['dilations']):
+		print("The length of 'dilations' must be equal to the length of 'kernel_size'.")
+		return False
 	return True
 
 def generate_one(sess, net, image, label, out_path, input_channel, klass, input_image, output_image):
@@ -101,10 +90,8 @@ def main():
 		input_channel=args.input_channel,
 		klass=args.klass,
 		batch_size=args.batch_size,
-		network_type=seg_params['network_type'],
 		kernel_size=seg_params['kernel_size'],
 		dilations=seg_params['dilations'],
-		strides=seg_params['strides'],
 		channels=seg_params['channels'],
 		with_bn=seg_params['with_bn'],
 		phase_train=False)
