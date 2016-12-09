@@ -144,7 +144,6 @@ class SegModel(object):
 				current_layer = conv
 			else:
 				current_layer = tf.nn.relu(conv)
-		self.probe = self.variables['biases'][9]
 		current_layer = tf.identity(current_layer, name="NETWORK_OUTPUT")
 		return current_layer
 

@@ -155,9 +155,5 @@ def main():
 		minimal_graph = convert_variables_to_constants(sess, sess.graph_def, ["NETWORK_OUTPUT"])
 		tf.train.write_graph(minimal_graph, '.', 'model.pb', as_text=False)
 
-	last_bias = sess.run(net.probe)
-	print(last_bias.shape)
-	print(last_bias)
-
 if __name__ == '__main__':
 	main()
