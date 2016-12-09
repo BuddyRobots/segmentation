@@ -138,7 +138,8 @@ class SegModel(object):
 				# the first element in the channels array is the input channel size,
 				conv = batch_norm(conv, self.channels[layer_idx + 1], self.phase_train)
 			else:
-				conv = tf.nn.bias_add(conv, self.variables['biases'][layer_idx])
+				if layer_idx != len(self.dilations) - 1:
+					conv = tf.nn.bias_add(conv, self.variables['biases'][layer_idx])
 			# the output layer has no nonlinearity
 			if layer_idx == len(self.dilations) - 1:
 				current_layer = conv

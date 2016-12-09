@@ -11,9 +11,9 @@ from reader import create_inputs
 from model import SegModel
 
 
-BATCH_SIZE = 4
+BATCH_SIZE = 1
 NUM_STEPS = 10000
-LEARNING_RATE = 0.005
+LEARNING_RATE = 0.0005
 KLASS = 6
 INPUT_CHANNEL = 3
 LOGDIR_ROOT = './logdir'
@@ -151,6 +151,7 @@ def main():
 		coord.join(threads)
 
 	with sess.as_default():
+		save(saver, sess, logdir, args.num_steps)
 		minimal_graph = convert_variables_to_constants(sess, sess.graph_def, ["NETWORK_OUTPUT"])
 		tf.train.write_graph(minimal_graph, '.', 'model.pb', as_text=False)
 
