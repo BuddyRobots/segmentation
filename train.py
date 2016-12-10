@@ -14,12 +14,12 @@ from model import SegModel
 BATCH_SIZE = 4
 NUM_STEPS = 10000
 LEARNING_RATE = 0.0005
-KLASS = 6
+KLASS = 2
 INPUT_CHANNEL = 3
 LOGDIR_ROOT = './logdir'
 STARTED_DATESTRING = "{0:%Y-%m-%dT%H-%M-%S}".format(datetime.now())
 SEG_PARAMS = './seg_params.json'
-TRAINING_SET_DIR = './owl_data_training_set/'
+TRAINING_SET_DIR = './training_set/'
 L2_REGULARIZATION_STRENGTH = 0
 
 def get_arguments():

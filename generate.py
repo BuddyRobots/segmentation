@@ -10,7 +10,7 @@ from tensorflow.python.framework.graph_util import convert_variables_to_constant
 from model import SegModel
 
 BATCH_SIZE = 1
-KLASS = 6
+KLASS = 2
 INPUT_CHANNEL = 3
 SEG_PARAMS = './seg_params.json'
 
@@ -121,15 +121,13 @@ def main():
 		tf.train.write_graph(minimal_graph, '.', 'model.pb', as_text=False)
 
 	if args.batch_generate:
-		for (dirpath, dirnames, filenames) in os.walk(args.input_path + '/images'):
+		for (dirpath, dirnames, filenames) in os.walk(args.input_path):
 			for filename in filenames:
-				image = args.input_path + '/images/' + filename
-				# label = args.input_path + '/labels/' + filename.replace('.png', '.dat')
+				image = args.input_path + '/' + filename
 				out_path = args.out_path + '/' + filename
 				generate_one(sess=sess,
 							 net=net,
 							 image=image,
-							 # label=label,
 							 label="",
 							 out_path=out_path,
 							 input_channel=args.input_channel,
