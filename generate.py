@@ -10,7 +10,8 @@ from tensorflow.python.framework.graph_util import convert_variables_to_constant
 from model import SegModel
 
 BATCH_SIZE = 1
-KLASS = 6
+# KLASS = 6
+KLASS = 10
 INPUT_CHANNEL = 3
 SEG_PARAMS = './seg_params.json'
 
